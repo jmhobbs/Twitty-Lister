@@ -39,7 +39,7 @@ Next, you will need to run <tt>twitty-lister.py</tt> and authorize the
 account through the PIN mechanism.  After you authorize, it will add the
 users in blocks of 100.
 
-```bash
+```text
 (venv)jmhobbs@Cordelia~/twitty-lister$ python twitty-lister.py "What Cheer" screen_names 
 ==> Loading 7 users into "What Cheer"
 ==> Please authorize: http://api.twitter.com/oauth/authorize?oauth_token=xzKc2CHt22Xf3yqP3R0e9D3ACCIoPbNmOxfbLZaPWE
@@ -50,4 +50,6 @@ users in blocks of 100.
 ```
 
 That's it!
+
+![The list!](https://dl.dropbox.com/u/28665584/github/WhatCheer/twitty-lister/the-list.png)
 
