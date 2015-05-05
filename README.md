@@ -3,7 +3,9 @@
 This program is a simple tool to import users from a file into a Twitter
 list.
 
-# Installation
+There is an online version at https://twittylister.herokuapp.com/
+
+# Installation (if you hate online versions)
 
   1. Download <tt>twitty-lister.py</tt>
   2. <tt>pip install -r requirements.txt</tt>
@@ -16,8 +18,12 @@ To run twitty-lister you will need two files.  The first is a
 ```json
 {
   "consumer": {
-    "secret": "YOUR-SECRET-HERE",
-    "key": "YOUR-KEY-HERE"
+    "secret": "YOUR-CONSUMER-SECRET-HERE",
+    "key": "YOUR-CONSUMER-KEY-HERE"
+  },
+  "access": {
+    "secret": "YOUR-ACCESS-SECRET-HERE",
+    "key": "YOUR-ACCESS-KEY-HERE"
   }
 }
 ```
