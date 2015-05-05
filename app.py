@@ -28,6 +28,24 @@ def _logout():
     session.clear()
 
 
+def _get_twitter_client(session):
+    return Twython(
+        app.config['TWITTER_KEY'],
+        app.config['TWITTER_SECRET'],
+        session['OAUTH_TOKEN'],
+        session['OAUTH_TOKEN_SECRET']
+    )
+
+
+def _usernames_from_string(usernames):
+    return filter(None,
+                  map(string.strip,
+                      usernames.replace("\r", "")
+                               .replace("@", "")
+                               .replace(",", "")
+                               .split("\n")))
+
+
 def twitter_auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -60,7 +78,7 @@ def twitter_auth():
 
 @app.route("/twitter/authenticate/callback")
 def twitter_auth_callback():
-    twitter = Twython(app.config['TWITTER_KEY'], app.config['TWITTER_SECRET'], session['OAUTH_TOKEN'], session['OAUTH_TOKEN_SECRET'])
+    twitter = _get_twitter_client(session)
 
     del session['OAUTH_TOKEN']
     del session['OAUTH_TOKEN_SECRET']
@@ -70,10 +88,11 @@ def twitter_auth_callback():
         return redirect(url_for('index'))
 
     final_step = twitter.get_authorized_tokens(request.args['oauth_verifier'])
-    session['SESSION_OAUTH_TOKEN'] = final_step['oauth_token']
-    session['SESSION_OAUTH_TOKEN_SECRET'] = final_step['oauth_token_secret']
+    session['OAUTH_TOKEN'] = final_step['oauth_token']
+    session['OAUTH_TOKEN_SECRET'] = final_step['oauth_token_secret']
 
-    twitter = Twython(app.config['TWITTER_KEY'], app.config['TWITTER_SECRET'], session['SESSION_OAUTH_TOKEN'], session['SESSION_OAUTH_TOKEN_SECRET'])
+    twitter = _get_twitter_client(session)
+
     me = twitter.verify_credentials()
     session['TWITTER_ID'] = me['id_str']
     session['TWITTER_AVATAR'] = me['profile_image_url_https']
@@ -82,14 +101,13 @@ def twitter_auth_callback():
     return redirect(url_for('upload'))
 
 
-@app.route("/upload", methods=('GET', 'POST'))
+@app.route("/usernames", methods=('GET', 'POST'))
 @twitter_auth_required
 def upload():
     usernames = []  # TODO: Load from redis?
     error = None
     if request.method == 'POST':
-        usernames = request.form.get('usernames', '')
-        usernames = filter(None, map(string.strip, usernames.replace("\r", "").replace("@", "").replace(",", "").split("\n")))
+        usernames = _usernames_from_string(request.form.get('usernames', ''))
         if usernames:
             key = "tl:%s:usernames" % session['TWITTER_ID']
             redis.delete(key)
@@ -107,7 +125,7 @@ def list():
     if not redis.exists("tl:%s:usernames" % session['TWITTER_ID']):
         return redirect(url_for("upload"))
 
-    twitter = Twython(app.config['TWITTER_KEY'], app.config['TWITTER_SECRET'], session['SESSION_OAUTH_TOKEN'], session['SESSION_OAUTH_TOKEN_SECRET'])
+    twitter = _get_twitter_client(session)
     lists = twitter.show_lists(user_id=session['TWITTER_ID'])
 
     error = None
@@ -139,10 +157,19 @@ def list():
         if not error:
             job_id = redis.incr("tl:job_counter")
 
-            print "New job:", job_id
+            redis.rename("tl:%s:usernames" % session['TWITTER_ID'],
+                         "tl:job:%s:usernames" % job_id)
 
-            redis.rename("tl:%s:usernames" % session['TWITTER_ID'], "tl:job:%s:usernames" % job_id)
-            redis.hmset("tl:job:%s" % job_id, {"list_id": list_id, "list_name": list_name, "list_url": "https://twitter.com%s" % list_uri, "usernames": redis.llen("tl:job:%s:usernames" % job_id), "index": 0})
+            redis.hmset(
+                "tl:job:%s" % job_id,
+                {
+                    "list_id": list_id,
+                    "list_name": list_name,
+                    "list_url": "https://twitter.com%s" % list_uri,
+                    "usernames": redis.llen("tl:job:%s:usernames" % job_id),
+                    "index": 0
+                }
+            )
 
             redis.expire("tl:job:%s:usernames" % job_id, 86400)
             redis.expire("tl:job:%s" % job_id, 86400)
@@ -177,12 +204,11 @@ def work(job_id):
     if not job:
         return jsonify(error="Job Not Found")
 
-    twitter = Twython(app.config['TWITTER_KEY'], app.config['TWITTER_SECRET'], session['SESSION_OAUTH_TOKEN'], session['SESSION_OAUTH_TOKEN_SECRET'])
+    twitter = _get_twitter_client(session)
     index = int(job['index'])
     usernames = redis.lrange("tl:job:%s:usernames" % job_id, index, index + 100)
     if usernames:
-        print "usernames:", usernames
-        print twitter.create_list_members(list_id=job["list_id"], screen_name=','.join(usernames))
+        twitter.create_list_members(list_id=job["list_id"], screen_name=','.join(usernames))
 
     index = index + 100
     redis.hset("tl:job:%s" % job_id, "index", index)
