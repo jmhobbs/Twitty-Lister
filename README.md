@@ -5,6 +5,8 @@ list.
 
 There is an online version at https://twittylister.herokuapp.com/
 
+![Demo](http://dropit.velvetcache.org.s3.amazonaws.com/jmhobbs/MTI1mhTlqw/tl-demo.gif)
+
 # Installation (if you hate online versions)
 
   1. Download <tt>twitty-lister.py</tt>
