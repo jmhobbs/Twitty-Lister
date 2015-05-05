@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ "$ENV" == "DEVELOPMENT" ]; then
+  python app.py
+else
+  gunicorn app:app --log-file=-  
+fi
