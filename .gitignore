@@ -1,1 +1,7 @@
 config.json
+*.pyc
+env/
+.env
+.ropeproject/
+*.csv
+*.txt
