@@ -82,8 +82,8 @@ def twitter_auth_callback():
     return redirect(url_for('upload'))
 
 
-@twitter_auth_required
 @app.route("/upload", methods=('GET', 'POST'))
+@twitter_auth_required
 def upload():
     usernames = []  # TODO: Load from redis?
     error = None
@@ -101,8 +101,8 @@ def upload():
     return render_template("upload.html", usernames=usernames, error=error)
 
 
-@twitter_auth_required
 @app.route("/list", methods=('GET', 'POST'))
+@twitter_auth_required
 def list():
     if not redis.exists("tl:%s:usernames" % session['TWITTER_ID']):
         return redirect(url_for("upload"))
