@@ -1,0 +1,32 @@
+{% extends "/template.html" %}
+{% block body %}
+<form method="POST">
+
+<div class="row">
+  <h3>What list should we add them to?</h3>
+  <ul class="nodots">
+    {% for list in lists %}
+    <li>
+      <input type="radio" name="list" value="{{ list['id_str'] }}" />
+      {{ list['name'] }}{% if list['description'] %} - {{ list['description'] }}{% endif %}
+    </li>
+    {% endfor %}
+    <li>
+      <input type="radio" name="list" value="NEW" />
+      Create New List:
+      <div>
+        <input type="text" name="name" />
+      </div>
+    </li>
+  </ul>
+</div>
+
+<hr/>
+
+<div class="row">
+  <a href="{{ url_for("upload") }}" class="btn btn-danger">&laquo; Back</a>
+  <button type="submit" class="pull-right btn btn-success">Next &raquo;</button>
+</div>
+
+</form>
+{% endblock %}

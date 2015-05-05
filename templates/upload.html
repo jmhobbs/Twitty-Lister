@@ -1,0 +1,19 @@
+{% extends "/template.html" %}
+{% block body %}
+<form method="POST">
+
+<div class="row">
+  <h3>What Twitter usernames should we add?</h3>
+  <p>Enter in all your twitter usernames, one per line.</p>
+  <textarea style="width: 100%; height: 300px;" name="usernames">{% for username in usernames %}{{ username }}
+{% endfor %}</textarea>
+</div>
+
+<hr/>
+
+<div class="row">
+  <button type="submit" class="pull-right btn btn-success">Next &raquo;</a>
+</div>
+
+</form>
+{% endblock %}

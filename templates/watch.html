@@ -1,0 +1,39 @@
+{% extends "/template.html" %}
+{% block body %}
+<div class="row">
+  <h3>Adding {{ job["usernames"] }} twitter users to list "{{ job["list_name"] }}"</h3>
+  <p id="message">{% if progress < 100 %}Please Wait{% else %}Done!{% endif %}</p>
+  <div class="progress">
+    <div class="progress-bar" role="progressbar" style="width: {{ job_progress }}%;"></div>
+  </div>
+  <a href="{{ job["list_url"] }}" class="btn btn-success"{% if progress < 100 %} style="display: none;"{% endif %}>Go to it!</a>
+</div>
+{% if progress < 100 %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.1.6/zepto.min.js"></script>
+<script>
+Zepto(function($){
+  var $progress = $(".progress-bar");
+
+  function update_work () {
+    $.getJSON("{{ work_url }}", function (data) {
+      if(data.error) {
+        alert(data.error);
+      }
+      else {
+        $progress.css('width', data.progress + '%');
+        if(data.progress < 100) {
+          update_work();
+        }
+        else {
+          $("#message").text("Done!");
+          $(".btn-success").show();
+        }
+      }
+    });
+  };
+
+  update_work();
+});
+</script>
+{% endif %}
+{% endblock %}

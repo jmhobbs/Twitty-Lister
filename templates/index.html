@@ -1,0 +1,9 @@
+{% extends "/template.html" %}
+{% block body %}
+<div class="row">
+  <h3>Easily Import Twitter Users Into A List</h4>
+  <p>Sometimes you have a list of twitter usernames you want in a list <em>*cough conferences cough*</em> but it's a pain to add them individually.</p>
+  <p>So don't.  Use this thing.</p>
+  <a href="{{ url_for("twitter_auth_pre") }}" class="btn btn-primary">Login With Twitter</a>
+</div>
+{% endblock %}
